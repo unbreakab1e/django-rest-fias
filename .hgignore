@@ -1,0 +1,10 @@
+syntax: re
+
+^.*\.orig$
+^.*\.pyc$
+^.*\.pem$
+^.*\.key$
+^.*\.zip$
+egg-info
+build/
+dist/

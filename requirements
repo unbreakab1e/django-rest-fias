@@ -1,0 +1,6 @@
+django == 1.5.8
+djangorestframework >= 2.3.5
+drf-extensions >= 0.2.5
+django-filter == 0.7
+django-fias == 0.4.0
+#sphinxit == 0.3.1

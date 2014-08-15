@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework import filters
 from rest_framework_extensions.mixins import DetailSerializerMixin, NestedViewSetMixin
 from rest_fias import serializers
-from rest_fias.filters import AddressScanFilter
+from rest_fias.filters import AddressScanFilter, MultiValuesFilterBackend
 
 
 class DetailSerializerNestedViewMixin(DetailSerializerMixin,
@@ -24,7 +24,7 @@ class AddressObjectViewSet(DetailSerializerNestedViewMixin,
     serializer_class = serializers.AddrObjListSerializer
     serializer_detail_class = serializers.AddrObjSerializer
     paginate_by = 50
-    filter_backends = (filters.DjangoFilterBackend,
+    filter_backends = (MultiValuesFilterBackend,
                        filters.SearchFilter,
                        AddressScanFilter)
     filter_fields = ('aolevel', 'code', 'parentguid')

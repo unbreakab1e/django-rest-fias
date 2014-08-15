@@ -8,3 +8,4 @@ syntax: re
 egg-info
 build/
 dist/
+.idea/

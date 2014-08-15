@@ -1,7 +1,21 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.db import connections
-from rest_framework.filters import SearchFilter
+import django_filters
+from rest_framework.filters import SearchFilter, DjangoFilterBackend, FilterSet
+
+
+class ListFilter(django_filters.Filter):
+    def filter(self, qs, value):
+        return super(ListFilter, self).filter(qs, [value.split(","), 'in'])
+
+
+class AddrFieldSet(FilterSet):
+    aolevel = ListFilter(name='aolevel')
+
+
+class MultiValuesFilterBackend(DjangoFilterBackend):
+    default_filter_set = AddrFieldSet
 
 
 class AddressScanFilter(SearchFilter):

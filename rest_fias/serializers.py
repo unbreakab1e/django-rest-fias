@@ -43,7 +43,7 @@ class HouseListSerializer(serializers.ModelSerializer):
         model = House
         fields = (
             'houseguid', 'houseid', 'aoguid', 'housenum',
-            'buildnum', 'strucnum'
+            'buildnum', 'strucnum', 'postalcode',
         )
 
 
@@ -54,11 +54,11 @@ class HouseSerializer(serializers.ModelSerializer):
         addr_str = u'{index}, {fullname}'
         index = obj.postalcode if obj.postalcode else obj.aoguid.postalcode
         if obj.housenum:
-            addr_str += u', д {housenum}'
+            addr_str += u', д. {housenum}'
         if obj.buildnum:
-            addr_str += u' ст {buildnum}'
+            addr_str += u' ст. {buildnum}'
         if obj.strucnum:
-            addr_str += u' к {strucnum}'
+            addr_str += u' к. {strucnum}'
         return addr_str.format(
             index=index,
             fullname=obj.aoguid.full_name(depth=5),

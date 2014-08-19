@@ -123,9 +123,9 @@ class AddressScanFilter(SearchFilter):
         except ValueError:
             page = 1
 
-        term = ','.join(self.get_search_terms(request))
+        term = '*,'.join(self.get_search_terms(request))
 
-        query = search().match('@*' + term).options(
+        query = search().match(term + '*').options(
             field_weights={'formalname': 100, 'fullname': 80}
         ).limit(0, (page + 1) * page_size)  # запросим на 1 страницу больше
 
@@ -133,6 +133,11 @@ class AddressScanFilter(SearchFilter):
         parent_filter_param = request.QUERY_PARAMS.get('parentguid')
         if parent_filter_param:
             query = query.match('@parentguid '+parent_filter_param)
+
+        # установим ограничение по уровням
+        level_filter_param = request.QUERY_PARAMS.get('aolevel')
+        if level_filter_param:
+            query = query.filter(aolevel__in=level_filter_param.split(','))
 
         #Hack to bypass bug in sphixit. https://github.com/semirook/sphinxit/issues/16
         query._nodes.OrderBy.orderings = [u'item_weight DESC']

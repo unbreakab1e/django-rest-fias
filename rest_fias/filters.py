@@ -129,6 +129,11 @@ class AddressScanFilter(SearchFilter):
             field_weights={'formalname': 100, 'fullname': 80}
         ).limit(0, (page + 1) * page_size)  # запросим на 1 страницу больше
 
+        # установим ограничение по родительскому объекту
+        parent_filter_param = request.QUERY_PARAMS.get('parentguid')
+        if parent_filter_param:
+            query = query.match('@parentguid '+parent_filter_param)
+
         #Hack to bypass bug in sphixit. https://github.com/semirook/sphinxit/issues/16
         query._nodes.OrderBy.orderings = [u'item_weight DESC']
 

@@ -125,7 +125,7 @@ class AddressScanFilter(SearchFilter):
 
         term = ','.join(self.get_search_terms(request))
 
-        query = search().match(term + '*').options(
+        query = search().match('@*' + term).options(
             field_weights={'formalname': 100, 'fullname': 80}
         ).limit(0, (page + 1) * page_size)  # запросим на 1 страницу больше
 

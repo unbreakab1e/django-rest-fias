@@ -53,25 +53,6 @@ class AddressObjectViewSet(DetailSerializerNestedViewMixin,
         return super(AddressObjectViewSet, self).retrieve(request, *args, **kwargs)
 
 
-class KLADRViewSet(AddressObjectViewSet):
-    u"""
-    Список адресных объектов по кодам КЛАДРа
-    """
-    lookup_field = 'code'
-    filter_fields = ('aolevel',)
-    filter_backends = (filters.DjangoFilterBackend,
-                       filters.SearchFilter)
-    search_fields = ('formalname', 'shortname')
-
-    @classmethod
-    def get_lookup_format(cls, router, lookup_prefix=''):
-        if router.trailing_slash:
-            lookup_format = '[0-9^/]{13,17}'
-        else:
-            lookup_format = '[0-9^/.]{13,17}'
-        return lookup_format
-
-
 class HouseViewSet(DetailSerializerNestedViewMixin,
                    viewsets.ReadOnlyModelViewSet):
     u"""

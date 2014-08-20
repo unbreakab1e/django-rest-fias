@@ -12,6 +12,7 @@ class ListFilter(django_filters.Filter):
 
 class AddrFieldSet(FilterSet):
     aolevel = ListFilter(name='aolevel')
+    code = django_filters.CharFilter(name='code', lookup_type='startswith')
 
 
 class MultiValuesFilterBackend(DjangoFilterBackend):

@@ -9,9 +9,6 @@ router = AddressRouter()
 router.register(r'ao', views.AddressObjectViewSet, base_name='ao')\
     .register(r'houses', views.HouseViewSet, base_name='houses',
               parents_query_lookups=['aoguid'])
-router.register(r'kladr', views.KLADRViewSet, base_name='kladr')\
-    .register(r'houses', views.HouseViewSet, base_name='houses',
-              parents_query_lookups=['aoguid__code'])
 
 urlpatterns = patterns('',
     url(r'^v1/', include(router.urls), name='fias-v1'),

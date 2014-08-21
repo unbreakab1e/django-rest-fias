@@ -24,7 +24,7 @@ DATABASES = {
 
 # ФИАС
 FIAS_DATABASE_ALIAS = 'default'
-#FIAS_TABLES = ('houseint', 'house')
+FIAS_TABLES = ('house',)
 FIAS_SEARCH_ENGINE = 'sphinx'
 
 # Local time zone for this installation. Choices can be found here:
@@ -119,6 +119,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    'south',
     #'sslserver',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -130,10 +131,10 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'rest_fias',
     'fias',
     'rest_framework',
     # 'rest_framework_swagger',
+    'rest_fias',
 )
 
 # A sample logging configuration. The only tangible logging

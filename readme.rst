@@ -536,10 +536,87 @@
 Установка
 ---------
 
-::
-
-    python setup.py install
-
 Установка Sphinx <http://sphinxsearch.com/docs/2.1.9/installation.html>
 
-Создание и заполнение базы данных FIAS <https://github.com/Yuego/django-fias>
+Первоначальна загрузка данных
+=============================
+
+(на основе <https://github.com/Yuego/django-fias>)
+
+В settings.py проекта обязательно должны быть подключены модули 'south', 'fias', 'rest_fias'
+(желательно в этом же порядке, чтобы использовалась оптимизированная команда загрузки данных):
+
+::
+
+    INSTALLED_APPS = (
+        'south',
+        ...
+        'fias',
+        ...
+        'rest_fias',
+    )
+
+Также должна быть указана БД (если не указана, то будет использоваться БД с псевдонимом 'fias') и загружаемые таблицы:
+
+::
+
+    FIAS_DATABASE_ALIAS = 'default'
+    FIAS_TABLES = ('house',)
+
+
+Скачать файл полной БД ФИАС в формате XML <http://fias.nalog.ru/Public/DownloadPage.aspx>
+(файл будет называться *fias_xml.rar*)
+
+Синхронизировать структуру базы:
+
+::
+
+    python manage.py syncdb
+    python manage.py migrate
+
+Запустить загрузку данных:
+
+::
+
+    python manage.py fias --file ./fias_xml.rar --really-replace --force-replace
+
+Будет идти долго - у меня шло около 8 часов (при загрузке таблицы 'house').
+
+
+Настрока полнотекстового поиска
+===============================
+
+(пути указаны для ubuntu/debian)
+
+Отредактировать пример файла настройки demo_service/sphinx.conf или сформировать новый файл:
+
+::
+
+    python manage.py fias_sphinx --path=/var/lib/sphinxsearch/data/ > sphinx.conf
+
+-- path - путь хранения базы sphinx
+
+Скопировать файл sphix.conf в папку sphinx.
+
+::
+
+    cp ./sphinx.conf /etc/sphinxsearch/
+
+Запустить создание индекса:
+
+::
+
+    indexer -c /etc/sphinxsearch/sphinx.conf --all
+
+Запустить sphinx:
+
+::
+
+    /etc/init.d/sphinxsearch start
+
+
+В settings.py проекта включить поиск 'sphinx':
+
+::
+
+    FIAS_SEARCH_ENGINE = 'sphinx'

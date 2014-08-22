@@ -7,7 +7,33 @@ from rest_fias import serializers
 from rest_fias.filters import AddressScanFilter, MultiValuesFilterBackend
 
 
-class DetailSerializerNestedViewMixin(DetailSerializerMixin,
+class DetailSerializerSwitcherMixin(DetailSerializerMixin):
+    """
+    Add custom serializer for view by switcher
+    """
+    serializer_switcher_param = 'view'
+
+    def get_serializer_class(self):
+        switcher = self.get_switch_param(self.request)
+        if isinstance(self.serializer_detail_class, dict) and \
+                getattr(self, 'object', None):
+            return self.serializer_detail_class.get(
+                switcher,
+                self.serializer_detail_class[None]
+            )
+        elif isinstance(self.serializer_class, dict) and \
+                not getattr(self, 'object', None):
+            return self.serializer_class.get(
+                switcher,
+                self.serializer_class[None]
+            )
+        return super(DetailSerializerSwitcherMixin, self).get_serializer_class()
+
+    def get_switch_param(self, request):
+        return request.QUERY_PARAMS.get(self.serializer_switcher_param, None)
+
+
+class DetailSerializerNestedViewMixin(DetailSerializerSwitcherMixin,
                                       NestedViewSetMixin):
     def get_queryset(self, is_for_detail=False):
         return self.filter_queryset_by_parents_lookups(
@@ -21,8 +47,14 @@ class AddressObjectViewSet(DetailSerializerNestedViewMixin,
     Адресные объекты
     """
     model = AddrObj
-    serializer_class = serializers.AddrObjListSerializer
-    serializer_detail_class = serializers.AddrObjSerializer
+    serializer_class = {
+        None: serializers.AddrObjListSerializer,
+        'simple': serializers.SimpleAddrObjListSerializer
+    }
+    serializer_detail_class = {
+        None: serializers.AddrObjSerializer,
+        'withparents': serializers.AddrObjWithParentsSerializer,
+    }
     paginate_by = 50
     filter_backends = (MultiValuesFilterBackend,
                        filters.SearchFilter,

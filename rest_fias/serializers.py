@@ -17,6 +17,16 @@ class AddrObjListSerializer(serializers.ModelSerializer):
         )
 
 
+class SimpleAddrObjListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AddrObj
+        fields = (
+            'aoguid', 'parentguid', 'formalname', 'shortname',
+            'aolevel', 'code',
+        )
+
+
 class AddrObjSerializer(serializers.ModelSerializer):
     fullname = serializers.SerializerMethodField(method_name='get_fullname')
 
@@ -35,6 +45,32 @@ class AddrObjSerializer(serializers.ModelSerializer):
             'code', 'plaincode', 'actstatus', 'centstatus',
             'operstatus', 'currstatus', 'livestatus', 'fullname',
             'updatedate', 'startdate', 'enddate', 'normdoc',
+        )
+
+
+class AddrObjWithParentsSerializer(AddrObjSerializer):
+    parent = serializers.SerializerMethodField(method_name='get_parent')
+
+    def get_parent(self, obj):
+        data = SimpleAddrObjListSerializer(obj, many=False).data
+        if obj.parentguid:
+            parent = AddrObj.objects.get(pk=obj.parentguid)
+            data['parent'] = self.get_parent(parent)
+        return data
+
+    class Meta:
+        model = AddrObj
+        fields = (
+            'aoguid', 'parentguid', 'aoid', 'previd', 'nextid',
+            'ifnsfl', 'terrifnsfl', 'ifnsul', 'terrifnsul',
+            'okato', 'oktmo', 'postalcode',
+            'formalname', 'offname', 'shortname', 'aolevel',
+            'regioncode', 'autocode', 'areacode', 'citycode',
+            'ctarcode', 'placecode', 'streetcode', 'extrcode', 'sextcode',
+            'code', 'plaincode', 'actstatus', 'centstatus',
+            'operstatus', 'currstatus', 'livestatus', 'fullname',
+            'updatedate', 'startdate', 'enddate', 'normdoc',
+            'parent'
         )
 
 

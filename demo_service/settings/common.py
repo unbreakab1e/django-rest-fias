@@ -178,3 +178,9 @@ FIAS_SB_WEIGHTS = {
     'г': 128,
     'с': 100,
 }
+
+try:
+    import gunicorn
+    INSTALLED_APPS += ('gunicorn', )
+except ImportError:
+    pass

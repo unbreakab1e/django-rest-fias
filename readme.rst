@@ -798,3 +798,120 @@
 ::
 
     FIAS_SEARCH_ENGINE = 'sphinx'
+
+
+
+Настройка аутентификации OAuth2
+-------------------------------
+
+Установить пакет OAuth2
+
+::
+
+    pip install django-oauth2-provider
+
+
+Настроить приложение (settings.py)
+
+::
+
+    INSTALLED_APPS = (
+        ...
+        'provider',
+        'provider.oauth2',
+        ...
+    )
+
+    REST_FRAMEWORK = {
+        ...
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework.authentication.OAuth2Authentication',
+        ),
+        'DEFAULT_PERMISSION_CLASSES': (
+            'rest_framework.permissions.IsAuthenticated',
+        ),
+    }
+
+Добавить обрабатываемые адреса (urls.py)
+
+::
+
+    urlpatterns = patterns('',
+        ...
+        url(r'^oauth2/', include('provider.oauth2.urls', namespace = 'oauth2')),
+        ...
+    )
+
+
+Выполнить миграцию базы
+
+::
+
+    python manage.py syncdb
+    python manage.py migrate
+
+
+Регистрация клиентского приложения
+==================================
+
+Заходим в django-admin /admin
+
+В разделе Auth создаем пользователя от имени которого будут выполняться запросы.
+(Можно всех клиентов привязать к одному пользователю, они всё-равно будут отличаться номером клиента)
+
+В разделе Oauth2 создаем клиента,
+* выбираем пользователя
+* указываем Url и Redirect uri приложения
+* Client type указываем *Confidencial*
+* сохраняем клиента
+* Копируем Client id и Client secret и передаем для настройки клиентского приложения
+
+
+Обращение к сервису из клиентского приложения
+=============================================
+
+1. Получение токена
+
+Для получения токена нужно выполнить POST-запрос:
+
+  POST /oauth2/access_token/
+
+:Параметры:
+
+:client_id:
+    Тип: строка символов. Идентификатор клиентского приложения
+
+:client_secret:
+    Тип: строка символов. Секретный ключ клиентского приложения
+
+:grant_type:
+    Тип: строка символов. Тип идентификации клиента. Доступные значения: *password*
+
+:username:
+    Тип: строка символов. Имя пользователя, которому выдается токен
+
+:password:
+    Тип: строка символов. Пароль пользователя
+
+----
+
+:Результат:
+    Тип: application/json.
+
+::
+
+    {
+        "access_token": токен для доступа к сервису,
+        "token_type": "Bearer",
+        "expires_in": время жизни токена в секундах,
+        "refresh_token": токен для обновления,
+        "scope": "read"
+    }
+
+
+2. Запрос данных
+
+После получения токена его нужно указать в заголовке запроса к сервису:
+
+::
+    Authorization: Bearer <токен>

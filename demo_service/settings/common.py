@@ -120,7 +120,6 @@ TEMPLATE_DIRS = (
 
 INSTALLED_APPS = (
     'south',
-    #'sslserver',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -171,13 +170,7 @@ REST_FRAMEWORK = {
       #'rest_framework.renderers.XMLRenderer',
       'rest_framework.renderers.JSONRenderer',
       #'rest_framework.renderers.BrowsableAPIRenderer',
-  ),
-  # 'DEFAULT_AUTHENTICATION_CLASSES': (
-  #     'rest_framework.authentication.OAuth2Authentication',
-  # ),
-  # 'DEFAULT_PERMISSION_CLASSES': (
-  #     'rest_framework.permissions.IsAuthenticated',
-  # ),
+  )
 }
 
 FIAS_SB_WEIGHTS = {

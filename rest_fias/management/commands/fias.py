@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, absolute_import, print_function
 import copy
-
+import os
 import sys
 from optparse import make_option
 import datetime
@@ -14,19 +14,21 @@ from django.utils.translation import activate
 from django.db.models import sql
 
 from fias.importer.commands import load_complete_xml, load_delta_xml
-from fias.importer.version import fetch_version_info
 from fias.management.utils.weights import rewrite_weights
-from fias.models import Status, Version
+from fias.models import Status, Version, AddrObj
 from fias.importer import bulk
+from fias.importer.loader import house
 from south.creator import changes, actions, freezer
 from south.creator.actions import AddIndex, AddUnique
 from south.migration import Migrations
 from south.orm import FakeORM
 from south.v2 import SchemaMigration
 from south.db import db
+from suds.client import Client
 
 
 originalBulkCreate = bulk.BulkCreate
+originalHouseLoader = house.Loader
 
 
 # kirov
@@ -66,6 +68,45 @@ class CopyInsertBulkCreate(originalBulkCreate):
 bulk.BulkCreate = CopyInsertBulkCreate
 
 
+class SilentHouseLoader(originalHouseLoader):
+
+    def _init(self):
+        super(SilentHouseLoader, self)._init()
+        self._addrobj_cache = set(AddrObj.objects.values_list('aoguid', flat=True))
+
+    def process_row(self, row):
+        if row.tag == 'House':
+            end_date = self._str_to_date(row.attrib['ENDDATE'])
+            if end_date < self._today:
+                #print ('Out of date entry. Skipping...')
+                return
+
+            start_date = self._str_to_date(row.attrib['STARTDATE'])
+            if start_date > self._today:
+                print ('Date in future - skipping...')
+                return
+
+            related_attrs = dict()
+            # kirov
+            if not row.attrib['AOGUID'] in self._addrobj_cache:
+                print ('AddrObj with GUID `{0}` not found. Skipping house...'.format(row.attrib['AOGUID']))
+                return
+            aoguid_id = row.attrib['AOGUID']
+            del row.attrib['AOGUID']
+            related_attrs['aoguid_id'] = aoguid_id
+
+            # try:
+            #     related_attrs['aoguid'] = AddrObj.objects.get(pk=row.attrib['AOGUID'])
+            # except AddrObj.DoesNotExist:
+            #     print ('AddrObj with GUID `{0}` not found. Skipping house...'.format(row.attrib['AOGUID']))
+            #     return
+
+            self._bulk.push(row, related_attrs=related_attrs)
+
+
+house.Loader = SilentHouseLoader
+
+
 class Command(BaseCommand):
     help = 'Fill or update FIAS database'
     usage_str = 'Usage: ./manage.py fias [--file <filename>|--remote-file|'\
@@ -93,6 +134,8 @@ class Command(BaseCommand):
         make_option('--indexes', action='store', dest='indexes', default=None,
                     type='choice', choices=['remove', 'restore'],
                     help='Remove or restore FIAS table indexes'),
+        make_option('--file-version', action='store', dest='version', default=None,
+                    help='File version number'),
     )
 
     def handle(self, *args, **options):
@@ -103,6 +146,7 @@ class Command(BaseCommand):
         skip = options.pop('skip')
         weights = options.pop('weights')
         indexes = options.pop('indexes')  # kirov
+        file_version = options.pop('version')  # kirov
 
         path = options.pop('file') if not remote else None
 
@@ -114,11 +158,11 @@ class Command(BaseCommand):
                        'or enter key --really-replace, to clear the table by means of Django ORM')
 
         truncate = False
-        if remote:  # kirov
+        if remote or not file_version:  # kirov
             fetch_version_info(update_all=True)
         else:  # kirov
             if not Version.objects.count():  # kirov
-                Version.objects.create(ver=0, dumpdate=datetime.date.min)  # kirov
+                Version.objects.create(ver=file_version or 0, dumpdate=datetime.date.min)  # kirov
 
         # Force Russian language for internationalized projects
         if settings.USE_I18N:
@@ -269,3 +313,32 @@ class Command(BaseCommand):
             "table_name": db.quote_name(table_name),
         }
         db.execute(sql)
+
+
+def fetch_version_info(update_all=False):
+    # настройки прокси из окружения
+    proxy_settings = dict()
+    if os.environ.has_key('http_proxy'):
+        proxy_settings['http'] = os.environ['http_proxy'].replace('http://', '')
+    elif os.environ.has_key('HTTP_PROXY'):
+        proxy_settings['http'] = os.environ['HTTP_PROXY'].replace('http://', '')
+    client = Client(url="http://fias.nalog.ru/WebServices/Public/DownloadService.asmx?WSDL",
+                    proxy=proxy_settings)
+    result = client.service.GetAllDownloadFileInfo()
+
+    for item in result.DownloadFileInfo:
+        try:
+            ver = Version.objects.get(ver=item['VersionId'])
+        except Version.DoesNotExist:
+            ver = Version(**{
+                'ver': item['VersionId'],
+                'dumpdate': datetime.datetime.strptime(item['TextVersion'][-10:], "%d.%m.%Y").date(),
+            })
+        finally:
+            if not ver.pk or update_all:
+                setattr(ver, 'complete_xml_url', item['FiasCompleteXmlUrl'])
+                if hasattr(item, 'FiasDeltaXmlUrl'):
+                    setattr(ver, 'delta_xml_url', item['FiasDeltaXmlUrl'])
+                else:
+                    setattr(ver, 'delta_xml_url', None)
+                ver.save()

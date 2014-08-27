@@ -1,0 +1,16 @@
+{% extends "admin_tools/dashboard/module.html" %}
+{% block module_content %}
+<ul>
+    {% spaceless %}
+    {% for child in module.children %}
+    <li class="form-row {% cycle 'odd' 'even' %}">
+        {{ child.title }}:<ul><li>{{ child.value }}</li>{% if child.date %}<li>от {{ child.date }}</li>{% endif %}</ul>
+    </li>
+    {% endfor %}
+    {% endspaceless %}
+</ul>
+
+{% for child in module.bottom %}
+<p><a href="{{ child.url }}"><span class="icon">{{ child.name }}</span></a></p>
+{% endfor %}
+{% endblock %}

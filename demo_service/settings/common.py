@@ -38,7 +38,7 @@ TIME_ZONE = 'America/Chicago'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-ru'
 
 SITE_ID = 1
 
@@ -118,8 +118,22 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    # default template context processors
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+
+    # required by django-admin-tools
+    'django.core.context_processors.request',
+)
+
 INSTALLED_APPS = (
     'south',
+    'admin_tools',
+    'admin_tools.theming',
+    'admin_tools.dashboard',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -178,6 +192,8 @@ FIAS_SB_WEIGHTS = {
     'г': 128,
     'с': 100,
 }
+
+ADMIN_TOOLS_INDEX_DASHBOARD = 'demo_service.dashboard.CustomIndexDashboard'
 
 try:
     import gunicorn

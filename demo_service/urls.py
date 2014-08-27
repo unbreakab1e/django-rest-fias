@@ -1,6 +1,7 @@
 #coding: utf-8
 from django.conf import settings
 from django.conf.urls import patterns, include, url
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 # Uncomment the next two lines to enable the admin:
 import admin
@@ -14,6 +15,7 @@ urlpatterns = patterns('',
     #url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^admin_tools/', include('admin_tools.urls')),
 )
+urlpatterns += staticfiles_urlpatterns()
 
 if 'provider.oauth2' in settings.INSTALLED_APPS:
     urlpatterns.extend(

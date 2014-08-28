@@ -139,6 +139,19 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
+        # создадим или обновить признак обновления
+        try:
+            v = Version.objects.get(pk=-1)
+            v.date = datetime.date.today()
+            v.complete_xml_url = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+            v.save()
+        except Version.DoesNotExist:
+            Version.objects.create(
+                ver=-1,
+                dumpdate=datetime.date.min,
+                date=datetime.date.today(),
+                complete_xml_url=datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+            )
         remote = options.pop('remote')
         force = options.pop('force')
         really = options.pop('really')
@@ -159,9 +172,10 @@ class Command(BaseCommand):
 
         truncate = False
         if remote or not file_version:  # kirov
+            print ('Fetch version info...')
             fetch_version_info(update_all=True)
         else:  # kirov
-            if not Version.objects.count():  # kirov
+            if not Version.objects.filter(ver=file_version or 0).count():  # kirov
                 Version.objects.create(ver=file_version or 0, dumpdate=datetime.date.min)  # kirov
 
         # Force Russian language for internationalized projects
@@ -172,6 +186,7 @@ class Command(BaseCommand):
             if force:
                 truncate = True
                 Status.objects.all().delete()
+            print ('Total database updating...')
             load_complete_xml(path=path, truncate=truncate)
 
         if update:
@@ -188,6 +203,10 @@ class Command(BaseCommand):
         # kirov
         if indexes == 'restore':
             self.restore_indexes()
+        print ('Finish')
+
+        # сбросим признак
+        Version.objects.filter(ver=-1).delete()
 
     def error(self, message, code=1):
         print(message)

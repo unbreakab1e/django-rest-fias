@@ -29,6 +29,7 @@ class FiasDashboardModule(modules.DashboardModule):
             },
             {
                 'title': _(u'Текущая версия'),
+                'value': ver_info.get('current_state'),
             },
         ])
         self.children.extend([
@@ -52,6 +53,12 @@ class FiasDashboardModule(modules.DashboardModule):
             result['last_date'] = latest_version.dumpdate
         except Version.DoesNotExist:
             pass
+        # проверим признак обновления
+        try:
+            v = Version.objects.get(pk=-1)
+            result['current_state'] = u'обновляется с %s' % v.complete_xml_url
+        except Version.DoesNotExist:
+            result['current_state'] = ''
         result['current'] = []
         for status in Status.objects.all():
             result['current'].append({

@@ -1,7 +1,7 @@
-django == 1.5.8
-djangorestframework >= 2.3.5
-drf-extensions >= 0.2.5
+django == 1.5.11
+djangorestframework == 2.4.4
+drf-extensions == 0.2.5
 django-filter == 0.7
-django-fias == 0.4.0
+django-fias == 0.5.0
 sphinxit == 0.3.1
-django-admin-tools >= 0.5.2
+django-admin-tools == 0.5.2

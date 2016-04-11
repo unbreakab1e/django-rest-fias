@@ -12,7 +12,7 @@ REST_FRAMEWORK.update(
             'rest_framework.authentication.OAuth2Authentication',
         ),
         'DEFAULT_PERMISSION_CLASSES': (
-            'rest_framework.permissions.IsAuthenticated',
+            'rest_framework.permissions.AllowAny',
         ),
     }
 )

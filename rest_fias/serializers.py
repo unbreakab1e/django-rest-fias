@@ -13,7 +13,7 @@ class AddrObjListSerializer(serializers.ModelSerializer):
         model = AddrObj
         fields = (
             'aoguid', 'parentguid', 'formalname', 'offname', 'shortname',
-            'aolevel', 'code', 'fullname', 'postalcode',
+            'aolevel', 'code', 'fullname', 'postalcode', 'okato',
         )
 
 
@@ -23,7 +23,7 @@ class SimpleAddrObjListSerializer(serializers.ModelSerializer):
         model = AddrObj
         fields = (
             'aoguid', 'parentguid', 'formalname', 'shortname',
-            'aolevel', 'code',
+            'aolevel', 'code', 'okato',
         )
 
 
@@ -79,7 +79,7 @@ class HouseListSerializer(serializers.ModelSerializer):
         model = House
         fields = (
             'houseguid', 'houseid', 'aoguid', 'housenum',
-            'buildnum', 'strucnum', 'postalcode',
+            'buildnum', 'strucnum', 'postalcode', 'okato',
         )
 
 

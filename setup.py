@@ -1,7 +1,7 @@
 #coding: utf-8
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def read(fn):
@@ -9,14 +9,14 @@ def read(fn):
 
 setup(
     name='django-rest-fias',
-    version='0.1.0.0',
+    version='0.1.0.0+ceki1',
     author='Kirov Ilya',
     author_email='kirov@bars-open.ru',
-    description=("REST-service for FIAS."),
+    description=("REST-service for FIAS, modified for usage in CEKI."),
     license="MIT",
     keywords="django rest fias",
     long_description=read('readme.rst'),
-    packages=['django-rest-fias'],
+    packages=find_packages(exclude=['demo_service*']),
     install_requires=read('requirements'),
     classifiers=(
         'Development Status :: 4 - Beta',
